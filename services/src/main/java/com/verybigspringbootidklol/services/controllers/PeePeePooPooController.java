@@ -1,6 +1,5 @@
 package com.verybigspringbootidklol.services.controllers;
 
-import com.verybigspringbootidklol.models.DTO.DTOResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -8,6 +7,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.json.Json;
 import javax.json.JsonObject;
+import java.util.HashMap;
 
 @RestController
 @RequestMapping("/peepeepoopoo")
@@ -24,8 +24,7 @@ public class PeePeePooPooController {
         return ResponseEntity.ok(message);
     }
 
-    @GetMapping("/test1") public ResponseEntity<DTOResponse> peePeePooPooTest1() {
-        DTOResponse response = new DTOResponse("You've called the peepeepoopoo test");
-        return ResponseEntity.ok(response);
+    @GetMapping("/test1") public ResponseEntity<Object> peePeePooPooTest1() {
+        return ResponseEntity.ok(new HashMap<String,String>(){{put("message","You've called the peepeepoopoo test");}});
     }
 }
