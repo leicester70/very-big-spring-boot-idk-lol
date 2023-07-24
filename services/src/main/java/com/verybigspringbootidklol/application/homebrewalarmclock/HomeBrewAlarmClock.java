@@ -12,7 +12,7 @@ public class HomeBrewAlarmClock {
     private DateTime currentTime;
     private ArrayList<DateTime> alarmList = new ArrayList<>();
     private String YOUTUBE_URL = "https://www.youtube.com/watch?v=js7mx3EgiDU";
-    private final Boolean isLoop = false;
+    private final Boolean isLoop = true;
 
     public void addAlarm(DateTime alarmTime) {
         alarmList.add(alarmTime);
@@ -21,34 +21,29 @@ public class HomeBrewAlarmClock {
     public void checkAlarms() {
         for (DateTime alarmTime : alarmList) {
             if (alarmTime.equals(currentTime)) {
-                openBrowserAndPlayMusic("https://www.youtube.com/watch?v=js7mx3EgiDU",false);
-                try {
-                    Desktop.getDesktop().browse(new URI(youtubeUrl));
-                } catch (IOException | URISyntaxException e) {
-                    e.printStackTrace();
-                };
+                openBrowserAndPlayMusic(YOUTUBE_URL, isLoop);
                 break;
             }
         }
     }
 
-    private static void openBrowserAndPlayMusic(String url, boolean isLoop){
-        String youtubeUrl = "https://www.youtube.com/watch?v=js7mx3EgiDU";
-        if (isLoop){youtubeUrl+="&loop=1";}
+    private static void openBrowserAndPlayMusic(String url, boolean isLoop) {
+        if (isLoop) {
+            url += "&loop=1";
+        }
         try {
-            Desktop.getDesktop().browse(new URI(youtubeUrl));
+            Desktop.getDesktop().browse(new URI(url));
         } catch (IOException | URISyntaxException e) {
             e.printStackTrace();
         }
     }
 
     public static void main(String[] args) {
-        if (isLoop){YOUTUBE_URL+="&loop=1";}
         HomeBrewAlarmClock alarmClock = new HomeBrewAlarmClock();
 
-        // Set the alarm time for 7:00 AM Singapore time
+        // Set the alarm time for 7:44 AM Singapore time
         DateTimeZone singaporeTimeZone = DateTimeZone.forID("Asia/Singapore");
-        DateTime alarmTime = DateTime.now(singaporeTimeZone).withTime(7, 44, 0, 0);
+        DateTime alarmTime = DateTime.now(singaporeTimeZone).withTime(7, 53, 0, 0);
         alarmClock.addAlarm(alarmTime);
 
         // Keep the alarm clock running indefinitely
@@ -66,7 +61,7 @@ public class HomeBrewAlarmClock {
                     System.out.println("[" + currentTime + "] Alarm set for " + alarm + ", " + secondsLeft + " seconds left.");
                 } else {
                     System.out.println("[" + currentTime + "] Alarm set for " + alarm + ", about to call the video!");
-                    openBrowserAndPlayMusic("https://www.youtube.com/watch?v=js7mx3EgiDU",false);
+                    alarmClock.openBrowserAndPlayMusic(alarmClock.YOUTUBE_URL, alarmClock.isLoop);
                 }
             }
 
