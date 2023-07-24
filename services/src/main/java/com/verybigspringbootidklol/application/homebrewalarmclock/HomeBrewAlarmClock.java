@@ -2,75 +2,62 @@ package com.verybigspringbootidklol.application.homebrewalarmclock;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
+
 import java.awt.*;
 import java.io.IOException;
-import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 
 public class HomeBrewAlarmClock {
-    private DateTime currentTime;
     private ArrayList<DateTime> alarmList = new ArrayList<>();
-    private String YOUTUBE_URL = "https://www.youtube.com/watch?v=js7mx3EgiDU";
-    private final Boolean isLoop = true;
+    private String VIDEO_FILE_PATH = "/services/mp4/I'll Make a Man Out of You METAL COVER - Mulan.mp4";
+    private final int COOLDOWN_TIME_SECONDS = 30; // Set the cooldown time to 30 seconds
 
     public void addAlarm(DateTime alarmTime) {
         alarmList.add(alarmTime);
     }
 
-    public void checkAlarms() {
-        for (DateTime alarmTime : alarmList) {
-            if (alarmTime.equals(currentTime)) {
-                openBrowserAndPlayMusic(YOUTUBE_URL, isLoop);
-                break;
+    public void playVideoFile(String filePath) {
+        URL videoUrl = getClass().getResource(filePath);
+        if (videoUrl != null) {
+            try {
+                String path = Paths.get(videoUrl.toURI()).toString();
+                Desktop.getDesktop().open(Paths.get(path).toFile());
+            } catch (IOException | URISyntaxException e) {
+                e.printStackTrace();
             }
-        }
-    }
-
-    private static void openBrowserAndPlayMusic(String url, boolean isLoop) {
-        if (isLoop) {
-            url += "&loop=1";
-        }
-        try {
-            Desktop.getDesktop().browse(new URI(url));
-        } catch (IOException | URISyntaxException e) {
-            e.printStackTrace();
+        } else {
+            System.out.println("File not found: " + filePath);
         }
     }
 
     public static void main(String[] args) {
         HomeBrewAlarmClock alarmClock = new HomeBrewAlarmClock();
 
-        // Set the alarm time for 7:44 AM Singapore time
         DateTimeZone singaporeTimeZone = DateTimeZone.forID("Asia/Singapore");
-        DateTime alarmTime = DateTime.now(singaporeTimeZone).withTime(7, 53, 0, 0);
+        DateTime alarmTime = DateTime.now(singaporeTimeZone).withTime(1, 1, 0, 0);
         alarmClock.addAlarm(alarmTime);
 
-        // Keep the alarm clock running indefinitely
         while (true) {
-            // Set the current time to the time when you run the application
             DateTime currentTime = DateTime.now();
-            alarmClock.currentTime = currentTime;
-
-            // Check for alarms and print information
             System.out.println("[" + currentTime + "] Current time");
+
             for (DateTime alarm : alarmClock.alarmList) {
                 long millisDifference = alarm.getMillis() - currentTime.getMillis();
-                if (millisDifference > 0) {
+                if (millisDifference <= 0) {
+                    System.out.println("[" + currentTime + "] Alarm set for " + alarm + ", about to call the video!");
+                    alarmClock.playVideoFile(alarmClock.VIDEO_FILE_PATH);
+                    break;
+                } else {
                     int secondsLeft = (int) (millisDifference / 1000);
                     System.out.println("[" + currentTime + "] Alarm set for " + alarm + ", " + secondsLeft + " seconds left.");
-                } else {
-                    System.out.println("[" + currentTime + "] Alarm set for " + alarm + ", about to call the video!");
-                    alarmClock.openBrowserAndPlayMusic(alarmClock.YOUTUBE_URL, alarmClock.isLoop);
                 }
             }
 
-            // Check for alarms
-            alarmClock.checkAlarms();
-
-            // Introduce a delay of 1 second before the next check
             try {
-                Thread.sleep(1000);
+                Thread.sleep(alarmClock.COOLDOWN_TIME_SECONDS * 1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
