@@ -12,8 +12,7 @@ import java.util.concurrent.TimeUnit;
 
 public class HomeBrewAlarmClock {
     private DateTime currentTime;
-    private ArrayList<DateTime> alarmList = new ArrayList<>();
-    private String YOUTUBE_URL = "https://www.youtube.com/watch?v=js7mx3EgiDU";
+    private final ArrayList<DateTime> alarmList = new ArrayList<>();
 
     public void addAlarm(DateTime alarmTime) {
         alarmList.add(alarmTime);
@@ -52,9 +51,9 @@ public class HomeBrewAlarmClock {
         }
     }
 
-    private void triggerAlarm(DateTime alarmTime) {
+    private void triggerAlarm(DateTime alarmTime, String youtubeURL) {
         // Play the video when the alarm time is reached
-        openBrowserAndPlayMusic(YOUTUBE_URL);
+        openBrowserAndPlayMusic(youtubeURL);
 
         // Remove the alarm from the list as it has already been triggered
         alarmList.remove(alarmTime);
@@ -78,7 +77,7 @@ public class HomeBrewAlarmClock {
             for (DateTime alarm : alarmList) {
                 if (currentTime.isAfter(alarm)) {
                     System.out.println("[" + currentTime + "] Alarm set for " + alarm + ", about to call the video!");
-                    triggerAlarm(alarm);
+                    triggerAlarm(alarm, "https://www.youtube.com/watch?v=js7mx3EgiDU");
                     break; // Break the loop after triggering the first alarm
                 } else {
                     long millisDifference = alarm.getMillis() - currentTime.getMillis();
