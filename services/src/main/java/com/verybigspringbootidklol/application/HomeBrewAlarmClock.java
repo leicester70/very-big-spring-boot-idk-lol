@@ -1,5 +1,3 @@
-package com.verybigspringbootidklol.application.homebrewalarmclock;
-
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
@@ -42,7 +40,6 @@ public class HomeBrewAlarmClock {
             long delayMillis = nextAlarmTime.getMillis() - currentTime.getMillis();
             if (delayMillis > 0) {
                 try {
-                    // Introduce a delay until the next alarm time
                     TimeUnit.MILLISECONDS.sleep(delayMillis);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -51,11 +48,8 @@ public class HomeBrewAlarmClock {
         }
     }
 
-    private void triggerAlarm(DateTime alarmTime, String youtubeURL) {
-        // Play the video when the alarm time is reached
-        openBrowserAndPlayMusic(youtubeURL);
-
-        // Remove the alarm from the list as it has already been triggered
+    private void triggerAlarm(DateTime alarmTime) {
+        openBrowserAndPlayMusic("https://www.youtube.com/watch?v=js7mx3EgiDU");
         alarmList.remove(alarmTime);
     }
 
@@ -63,39 +57,37 @@ public class HomeBrewAlarmClock {
         DateTimeZone singaporeTimeZone = DateTimeZone.forID("Asia/Singapore");
         currentTime = DateTime.now(singaporeTimeZone);
 
+        System.out.println("Alarm clock started. Current time: " + currentTime);
+
         while (!alarmList.isEmpty()) {
-            // Calculate the next alarm time
             DateTime nextAlarmTime = calculateNextAlarmTime();
-
-            // Wait for the next alarm
-            waitForNextAlarm(nextAlarmTime);
-
-            // Update the current time
-            currentTime = DateTime.now(singaporeTimeZone);
-
-            // Check for alarms and trigger if necessary
-            for (DateTime alarm : alarmList) {
-                if (currentTime.isAfter(alarm)) {
-                    System.out.println("[" + currentTime + "] Alarm set for " + alarm + ", about to call the video!");
-                    triggerAlarm(alarm, "https://www.youtube.com/watch?v=js7mx3EgiDU");
-                    break; // Break the loop after triggering the first alarm
-                } else {
-                    long millisDifference = alarm.getMillis() - currentTime.getMillis();
-                    int secondsLeft = (int) (millisDifference / 1000);
-                    System.out.println("[" + currentTime + "] Alarm set for " + alarm + ", " + secondsLeft + " seconds left.");
+            while (nextAlarmTime != null && currentTime.isBefore(nextAlarmTime)) {
+                long millisDifference = nextAlarmTime.getMillis() - currentTime.getMillis();
+                int secondsLeft = (int) (millisDifference / 1000);
+                System.out.println(String.format("[%s] Alarm set for %s, %d seconds left.", currentTime, nextAlarmTime, secondsLeft));
+                try {
+                    TimeUnit.SECONDS.sleep(1);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
+                currentTime = DateTime.now(singaporeTimeZone);
+            }
+
+            if (!alarmList.isEmpty()) {
+                System.out.println(String.format("[%s] Alarm set for %s, about to call the video!", currentTime, nextAlarmTime));
+                triggerAlarm(nextAlarmTime);
             }
         }
+        System.out.println("All alarms have been triggered. Alarm clock stopped.");
     }
 
     public static void main(String[] args) {
         HomeBrewAlarmClock alarmClock = new HomeBrewAlarmClock();
 
         DateTimeZone singaporeTimeZone = DateTimeZone.forID("Asia/Singapore");
-        DateTime alarmTime = DateTime.now(singaporeTimeZone).withTime(7, 53, 0, 0);
+        DateTime alarmTime = DateTime.now(singaporeTimeZone).withTime(1, 30, 0, 0);
         alarmClock.addAlarm(alarmTime);
 
-        // Start the alarm clock
         alarmClock.startAlarmClock();
     }
 }
