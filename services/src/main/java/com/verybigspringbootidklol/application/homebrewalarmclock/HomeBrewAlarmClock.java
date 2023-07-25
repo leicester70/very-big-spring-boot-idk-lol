@@ -5,31 +5,87 @@ import org.joda.time.DateTimeZone;
 
 import java.awt.*;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
 
 public class HomeBrewAlarmClock {
+    private DateTime currentTime;
     private ArrayList<DateTime> alarmList = new ArrayList<>();
-    private String VIDEO_FILE_PATH = "/services/mp4/I'll Make a Man Out of You METAL COVER - Mulan.mp4";
-    private final int COOLDOWN_TIME_SECONDS = 30; // Set the cooldown time to 30 seconds
+    private String YOUTUBE_URL = "https://www.youtube.com/watch?v=js7mx3EgiDU";
 
     public void addAlarm(DateTime alarmTime) {
         alarmList.add(alarmTime);
     }
 
-    public void playVideoFile(String filePath) {
-        URL videoUrl = getClass().getResource(filePath);
-        if (videoUrl != null) {
-            try {
-                String path = Paths.get(videoUrl.toURI()).toString();
-                Desktop.getDesktop().open(Paths.get(path).toFile());
-            } catch (IOException | URISyntaxException e) {
-                e.printStackTrace();
+    private void openBrowserAndPlayMusic(String url) {
+        try {
+            Desktop.getDesktop().browse(new URI(url));
+        } catch (IOException | URISyntaxException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private DateTime calculateNextAlarmTime() {
+        DateTime nextAlarmTime = null;
+        for (DateTime alarm : alarmList) {
+            long millisDifference = alarm.getMillis() - currentTime.getMillis();
+            if (millisDifference > 0) {
+                nextAlarmTime = nextAlarmTime == null ? alarm : (alarm.isBefore(nextAlarmTime) ? alarm : nextAlarmTime);
             }
-        } else {
-            System.out.println("File not found: " + filePath);
+        }
+        return nextAlarmTime;
+    }
+
+    private void waitForNextAlarm(DateTime nextAlarmTime) {
+        if (nextAlarmTime != null) {
+            long delayMillis = nextAlarmTime.getMillis() - currentTime.getMillis();
+            if (delayMillis > 0) {
+                try {
+                    // Introduce a delay until the next alarm time
+                    TimeUnit.MILLISECONDS.sleep(delayMillis);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    private void triggerAlarm(DateTime alarmTime) {
+        // Play the video when the alarm time is reached
+        openBrowserAndPlayMusic(YOUTUBE_URL);
+
+        // Remove the alarm from the list as it has already been triggered
+        alarmList.remove(alarmTime);
+    }
+
+    public void startAlarmClock() {
+        DateTimeZone singaporeTimeZone = DateTimeZone.forID("Asia/Singapore");
+        currentTime = DateTime.now(singaporeTimeZone);
+
+        while (!alarmList.isEmpty()) {
+            // Calculate the next alarm time
+            DateTime nextAlarmTime = calculateNextAlarmTime();
+
+            // Wait for the next alarm
+            waitForNextAlarm(nextAlarmTime);
+
+            // Update the current time
+            currentTime = DateTime.now(singaporeTimeZone);
+
+            // Check for alarms and trigger if necessary
+            for (DateTime alarm : alarmList) {
+                if (currentTime.isAfter(alarm)) {
+                    System.out.println("[" + currentTime + "] Alarm set for " + alarm + ", about to call the video!");
+                    triggerAlarm(alarm);
+                    break; // Break the loop after triggering the first alarm
+                } else {
+                    long millisDifference = alarm.getMillis() - currentTime.getMillis();
+                    int secondsLeft = (int) (millisDifference / 1000);
+                    System.out.println("[" + currentTime + "] Alarm set for " + alarm + ", " + secondsLeft + " seconds left.");
+                }
+            }
         }
     }
 
@@ -37,30 +93,10 @@ public class HomeBrewAlarmClock {
         HomeBrewAlarmClock alarmClock = new HomeBrewAlarmClock();
 
         DateTimeZone singaporeTimeZone = DateTimeZone.forID("Asia/Singapore");
-        DateTime alarmTime = DateTime.now(singaporeTimeZone).withTime(1, 1, 0, 0);
+        DateTime alarmTime = DateTime.now(singaporeTimeZone).withTime(7, 53, 0, 0);
         alarmClock.addAlarm(alarmTime);
 
-        while (true) {
-            DateTime currentTime = DateTime.now();
-            System.out.println("[" + currentTime + "] Current time");
-
-            for (DateTime alarm : alarmClock.alarmList) {
-                long millisDifference = alarm.getMillis() - currentTime.getMillis();
-                if (millisDifference <= 0) {
-                    System.out.println("[" + currentTime + "] Alarm set for " + alarm + ", about to call the video!");
-                    alarmClock.playVideoFile(alarmClock.VIDEO_FILE_PATH);
-                    break;
-                } else {
-                    int secondsLeft = (int) (millisDifference / 1000);
-                    System.out.println("[" + currentTime + "] Alarm set for " + alarm + ", " + secondsLeft + " seconds left.");
-                }
-            }
-
-            try {
-                Thread.sleep(alarmClock.COOLDOWN_TIME_SECONDS * 1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
+        // Start the alarm clock
+        alarmClock.startAlarmClock();
     }
 }
