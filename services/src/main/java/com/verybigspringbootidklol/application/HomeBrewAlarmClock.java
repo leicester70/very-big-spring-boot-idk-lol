@@ -1,3 +1,5 @@
+package com.verybigspringbootidklol.application;
+
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
@@ -11,6 +13,7 @@ import java.util.concurrent.TimeUnit;
 public class HomeBrewAlarmClock {
     private DateTime currentTime;
     private final ArrayList<DateTime> alarmList = new ArrayList<>();
+    private boolean alarmTriggered = false; // Flag to indicate if an alarm is triggered
 
     public void addAlarm(DateTime alarmTime) {
         alarmList.add(alarmTime);
@@ -48,8 +51,18 @@ public class HomeBrewAlarmClock {
         }
     }
 
+    public static void main(String[] args) {
+        HomeBrewAlarmClock alarmClock = new HomeBrewAlarmClock();
+
+        DateTimeZone singaporeTimeZone = DateTimeZone.forID("Asia/Singapore");
+        DateTime alarmTime = DateTime.now(singaporeTimeZone).withTime(2, 38, 0, 0);
+        alarmClock.addAlarm(alarmTime);
+
+        alarmClock.startAlarmClock();
+    }
+
     private void triggerAlarm(DateTime alarmTime) {
-        openBrowserAndPlayMusic("https://www.youtube.com/watch?v=js7mx3EgiDU");
+        alarmTriggered = true;
         alarmList.remove(alarmTime);
     }
 
@@ -59,7 +72,7 @@ public class HomeBrewAlarmClock {
 
         System.out.println("Alarm clock started. Current time: " + currentTime);
 
-        while (!alarmList.isEmpty()) {
+        while (!alarmList.isEmpty() && !alarmTriggered) {
             DateTime nextAlarmTime = calculateNextAlarmTime();
             while (nextAlarmTime != null && currentTime.isBefore(nextAlarmTime)) {
                 long millisDifference = nextAlarmTime.getMillis() - currentTime.getMillis();
@@ -73,21 +86,16 @@ public class HomeBrewAlarmClock {
                 currentTime = DateTime.now(singaporeTimeZone);
             }
 
-            if (!alarmList.isEmpty()) {
+            if (!alarmList.isEmpty() && !alarmTriggered) {
                 System.out.println(String.format("[%s] Alarm set for %s, about to call the video!", currentTime, nextAlarmTime));
                 triggerAlarm(nextAlarmTime);
             }
         }
+
+        if (alarmTriggered) {
+            openBrowserAndPlayMusic("https://www.youtube.com/watch?v=js7mx3EgiDU");
+        }
+
         System.out.println("All alarms have been triggered. Alarm clock stopped.");
-    }
-
-    public static void main(String[] args) {
-        HomeBrewAlarmClock alarmClock = new HomeBrewAlarmClock();
-
-        DateTimeZone singaporeTimeZone = DateTimeZone.forID("Asia/Singapore");
-        DateTime alarmTime = DateTime.now(singaporeTimeZone).withTime(1, 30, 0, 0);
-        alarmClock.addAlarm(alarmTime);
-
-        alarmClock.startAlarmClock();
     }
 }

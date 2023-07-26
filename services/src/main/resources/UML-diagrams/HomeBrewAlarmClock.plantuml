@@ -1,0 +1,18 @@
+@startuml
+title HomeBrewAlarmClock Algorithm Flow
+
+start
+:Start Alarm Clock;
+while (alarmList not empty and alarmTriggered is False) is (true)
+    :calculateNextAlarmTime();
+    :waitForNextAlarm(nextAlarmTime);
+    if (not alarmTriggered and alarmList not empty) then (true)
+        :triggerAlarm(nextAlarmTime);
+    endif
+endwhile (false)
+if (alarmTriggered) then (true)
+    :openBrowserAndPlayMusic("YouTube URL");
+endif
+:All alarms triggered. Alarm clock stopped.;
+stop
+@enduml
