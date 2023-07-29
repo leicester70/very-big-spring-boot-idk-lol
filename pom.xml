@@ -39,7 +39,7 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<configuration>
-					<mainClass>com.verybigspringbootidklol.application.MainApplication</mainClass>
+					<mainClass>com.verybigspringbootidklol.application.StartService</mainClass>
 				</configuration>
 				<executions>
 					<execution>
